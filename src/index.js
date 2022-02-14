@@ -1,8 +1,9 @@
-
+import { init } from "../framework/index";
+import { User } from "./User";
 
 window.addEventListener("DOMContentLoaded", () => {
-    console.log("window loaded");
+  const lastName = "yama";
+  const firstName = "kyoaaaaaa";
 
-    document.getElementById("myApp").innerText = "aaaaa";
-
-})
+  init("#myApp", User({ firstName, lastName }));
+});

@@ -1,3 +1,5 @@
+import { h } from "snabbdom";
+
 /**
  * createElementの大元はこんな感じ。
  * これをリファクタして使いまわせるようにした
@@ -20,6 +22,20 @@
 
 // const result = div`Hello aa ${firstName} ${"aa"} ああ ${lastName} san`;
 
+/**
+ * こやつらはただの動作のおさらい
+ */
+
+// const hoge = (hoge) => (arg) => ({
+//   name: hoge,
+//   fuga: () => console.log(arg)
+// });
+// const a = hoge("hoge");
+// a("a").fuga()
+
+/**　こっちがモノホン */
+/** snabbdomに書き換えたのでコメントアウト
+
 const createElement =
   (tagName) =>
   (strings, ...args) => ({
@@ -30,7 +46,25 @@ const createElement =
     ),
   });
 
-const p = createElement("p");
+export const p = createElement("p");
+export const div = createElement("div");
+ */
 
-const { template } = p`Hello ${"yama"} 3`;
-console.log(template);
+/** snabbdomで書き換えたやつ */
+const createElement =
+  (tagName) =>
+  (strings, ...args) => ({
+    type: "element",
+    template: h(
+      tagName,
+      {},
+      strings.reduce(
+        (prev, currentString, index) =>
+          prev + currentString + (args[index] || ""),
+        ""
+      )
+    ),
+  });
+
+export const div = createElement("div");
+export const p = createElement("p");
