@@ -15,9 +15,9 @@ export const init = (selector, component) => {
  */
 
 /** snabbdomで書き換え */
-import * as snabbdom from "snabbdom";
+import { init as snabbdomInit, eventListenersModule } from "snabbdom";
 
-const patch = snabbdom.init([]);
+const patch = snabbdomInit([eventListenersModule]);
 
 export const init = (selector, component) => {
   const app = document.querySelector(selector);

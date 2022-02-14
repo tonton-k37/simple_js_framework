@@ -77,18 +77,40 @@ export const div = createElement("div");
 //       )
 //     ),
 //   });
+// initial state for reducer
+
+const initialState = {
+  template: "",
+  on: {}
+};
 
 const createReducer = args => (prev, currentString, index) => {
+  const currentArg = args[index]; // 引数にonClickがある場合に、onClickオブジェクトのtypeにeventを持っているので
+  // on にくっつけることができる
+
+  if (currentArg && currentArg.type === "event") {
+    return { ...prev,
+      on: {
+        click: currentArg.click
+      }
+    };
+  }
+
   return { ...prev,
     template: prev.template + currentString + (args[index] || "")
   };
 };
 
 const createElement = tagName => (strings, ...args) => {
-  const myreducer = strings.reduce(createReducer(args));
+  const {
+    template,
+    on
+  } = strings.reduce(createReducer(args), initialState);
   return {
     type: "element",
-    template: (0,snabbdom__WEBPACK_IMPORTED_MODULE_0__.h)(tagName, {}, myreducer.template)
+    template: (0,snabbdom__WEBPACK_IMPORTED_MODULE_0__.h)(tagName, {
+      on
+    }, template)
   };
 };
 
@@ -125,6 +147,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "init": () => (/* binding */ init)
 /* harmony export */ });
 /* harmony import */ var snabbdom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! snabbdom */ "./node_modules/snabbdom/build/init.js");
+/* harmony import */ var snabbdom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! snabbdom */ "./node_modules/snabbdom/build/modules/eventlisteners.js");
 /**
  * 本番
  */
@@ -143,7 +166,7 @@ export const init = (selector, component) => {
 
 /** snabbdomで書き換え */
 
-const patch = snabbdom__WEBPACK_IMPORTED_MODULE_0__.init([]);
+const patch = (0,snabbdom__WEBPACK_IMPORTED_MODULE_0__.init)([snabbdom__WEBPACK_IMPORTED_MODULE_1__.eventListenersModule]);
 const init = (selector, component) => {
   const app = document.querySelector(selector);
   patch(app, component.template);
@@ -773,6 +796,104 @@ const array = Array.isArray;
 function primitive(s) {
   return typeof s === "string" || typeof s === "number" || s instanceof String || s instanceof Number;
 }
+
+/***/ }),
+
+/***/ "./node_modules/snabbdom/build/modules/eventlisteners.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/snabbdom/build/modules/eventlisteners.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "eventListenersModule": () => (/* binding */ eventListenersModule)
+/* harmony export */ });
+function invokeHandler(handler, vnode, event) {
+  if (typeof handler === "function") {
+    // call function handler
+    handler.call(vnode, event, vnode);
+  } else if (typeof handler === "object") {
+    // call multiple handlers
+    for (let i = 0; i < handler.length; i++) {
+      invokeHandler(handler[i], vnode, event);
+    }
+  }
+}
+
+function handleEvent(event, vnode) {
+  const name = event.type;
+  const on = vnode.data.on; // call event handler(s) if exists
+
+  if (on && on[name]) {
+    invokeHandler(on[name], vnode, event);
+  }
+}
+
+function createListener() {
+  return function handler(event) {
+    handleEvent(event, handler.vnode);
+  };
+}
+
+function updateEventListeners(oldVnode, vnode) {
+  const oldOn = oldVnode.data.on;
+  const oldListener = oldVnode.listener;
+  const oldElm = oldVnode.elm;
+  const on = vnode && vnode.data.on;
+  const elm = vnode && vnode.elm;
+  let name; // optimization for reused immutable handlers
+
+  if (oldOn === on) {
+    return;
+  } // remove existing listeners which no longer used
+
+
+  if (oldOn && oldListener) {
+    // if element changed or deleted we remove all existing listeners unconditionally
+    if (!on) {
+      for (name in oldOn) {
+        // remove listener if element was changed or existing listeners removed
+        oldElm.removeEventListener(name, oldListener, false);
+      }
+    } else {
+      for (name in oldOn) {
+        // remove listener if existing listener removed
+        if (!on[name]) {
+          oldElm.removeEventListener(name, oldListener, false);
+        }
+      }
+    }
+  } // add new listeners which has not already attached
+
+
+  if (on) {
+    // reuse existing listener or create new
+    const listener = vnode.listener = oldVnode.listener || createListener(); // update vnode for listener
+
+    listener.vnode = vnode; // if element changed or added we add all needed listeners unconditionally
+
+    if (!oldOn) {
+      for (name in on) {
+        // add listener if element was changed or new listeners added
+        elm.addEventListener(name, listener, false);
+      }
+    } else {
+      for (name in on) {
+        // add listener if new listener added
+        if (!oldOn[name]) {
+          elm.addEventListener(name, listener, false);
+        }
+      }
+    }
+  }
+}
+
+const eventListenersModule = {
+  create: updateEventListeners,
+  update: updateEventListeners,
+  destroy: updateEventListeners
+};
 
 /***/ }),
 

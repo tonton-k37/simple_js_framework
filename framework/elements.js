@@ -67,7 +67,21 @@ export const div = createElement("div");
 //     ),
 //   });
 
+// initial state for reducer
+const initialState = {
+  template: "",
+  on: {},
+};
+
 const createReducer = (args) => (prev, currentString, index) => {
+  const currentArg = args[index];
+
+  // 引数にonClickがある場合に、onClickオブジェクトのtypeにeventを持っているので
+  // on にくっつけることができる
+  if (currentArg && currentArg.type === "event") {
+    return { ...prev, on: { click: currentArg.click } };
+  }
+
   return {
     ...prev,
     template: prev.template + currentString + (args[index] || ""),
@@ -77,11 +91,11 @@ const createReducer = (args) => (prev, currentString, index) => {
 const createElement =
   (tagName) =>
   (strings, ...args) => {
-    const myreducer = strings.reduce(createReducer(args));
+    const { template, on } = strings.reduce(createReducer(args), initialState);
 
     return {
       type: "element",
-      template: h(tagName, {}, myreducer.template),
+      template: h(tagName, { on }, template),
     };
   };
 
