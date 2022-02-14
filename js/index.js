@@ -63,14 +63,54 @@ export const div = createElement("div");
  */
 
 /** snabbdomで書き換えたやつ */
+// const createElement =
+//   (tagName) =>
+//   (strings, ...args) => ({
+//     type: "element",
+//     template: h(
+//       tagName,
+//       {},
+//       strings.reduce(
+//         (prev, currentString, index) =>
+//           prev + currentString + (args[index] || ""),
+//         ""
+//       )
+//     ),
+//   });
 
-const createElement = tagName => (strings, ...args) => ({
-  type: "element",
-  template: (0,snabbdom__WEBPACK_IMPORTED_MODULE_0__.h)(tagName, {}, strings.reduce((prev, currentString, index) => prev + currentString + (args[index] || ""), ""))
-});
+const createReducer = args => (prev, currentString, index) => {
+  return { ...prev,
+    template: prev.template + currentString + (args[index] || "")
+  };
+};
+
+const createElement = tagName => (strings, ...args) => {
+  const myreducer = strings.reduce(createReducer(args));
+  return {
+    type: "element",
+    template: (0,snabbdom__WEBPACK_IMPORTED_MODULE_0__.h)(tagName, {}, myreducer.template)
+  };
+};
 
 const div = createElement("div");
 const p = createElement("p");
+
+/***/ }),
+
+/***/ "./framework/event.js":
+/*!****************************!*\
+  !*** ./framework/event.js ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "onClick": () => (/* binding */ onClick)
+/* harmony export */ });
+const onClick = func => ({
+  type: "event",
+  click: func
+});
 
 /***/ }),
 
@@ -771,11 +811,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "User": () => (/* binding */ User)
 /* harmony export */ });
 /* harmony import */ var _framework_elements__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../framework/elements */ "./framework/elements.js");
+/* harmony import */ var _framework_event__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../framework/event */ "./framework/event.js");
+
 
 const User = ({
   firstName,
   lastName
-}) => _framework_elements__WEBPACK_IMPORTED_MODULE_0__.div`Hello ${firstName} ${lastName} 3`;
+}) => _framework_elements__WEBPACK_IMPORTED_MODULE_0__.div`${(0,_framework_event__WEBPACK_IMPORTED_MODULE_1__.onClick)(() => alert(firstName))} Hello ${firstName} ${lastName} 3`;
 
 /***/ })
 

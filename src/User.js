@@ -1,4 +1,5 @@
 import { div } from "../framework/elements";
+import { onClick } from "../framework/event";
 
 export const User = ({ firstName, lastName }) =>
-  div`Hello ${firstName} ${lastName} 3`;
+  div`${onClick(() => alert(firstName))} Hello ${firstName} ${lastName} 3`;

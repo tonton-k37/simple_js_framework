@@ -51,20 +51,39 @@ export const div = createElement("div");
  */
 
 /** snabbdomで書き換えたやつ */
+
+// const createElement =
+//   (tagName) =>
+//   (strings, ...args) => ({
+//     type: "element",
+//     template: h(
+//       tagName,
+//       {},
+//       strings.reduce(
+//         (prev, currentString, index) =>
+//           prev + currentString + (args[index] || ""),
+//         ""
+//       )
+//     ),
+//   });
+
+const createReducer = (args) => (prev, currentString, index) => {
+  return {
+    ...prev,
+    template: prev.template + currentString + (args[index] || ""),
+  };
+};
+
 const createElement =
   (tagName) =>
-  (strings, ...args) => ({
-    type: "element",
-    template: h(
-      tagName,
-      {},
-      strings.reduce(
-        (prev, currentString, index) =>
-          prev + currentString + (args[index] || ""),
-        ""
-      )
-    ),
-  });
+  (strings, ...args) => {
+    const myreducer = strings.reduce(createReducer(args));
+
+    return {
+      type: "element",
+      template: h(tagName, {}, myreducer.template),
+    };
+  };
 
 export const div = createElement("div");
 export const p = createElement("p");
